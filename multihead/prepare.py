@@ -5,13 +5,13 @@ import errno
 import shutil
 
 
-def handle_video(origin_dir, target_dir):
-    if not os.path.exists(target_dir):
-        makedirs(target_dir)
+def handle_video(origin_dir):
+    # if not os.path.exists(target_dir):
+    #     makedirs(target_dir)
 
-    new_dir = os.path.basename(origin_dir)
-    copy_dir(origin_dir, os.path.join(target_dir, new_dir))
-    move_video(new_dir)
+    # new_dir = os.path.join(target_dir, os.path.basename(origin_dir))
+    # copy_dir(origin_dir, new_dir)
+    move_video(origin_dir)
 
 
 def copy_dir(origin_dir, target_dir):
@@ -33,10 +33,6 @@ def move_to_video_dir(base_dir):
                 shutil.move(os.path.join(sub_dir, f), os.path.join(video_dir, f))
 
 
-def fullpath(dirname, name):
-    return os.path.join(dirname, name)
-
-
 def makedirs(dirname):
     try:
         os.makedirs(dirname)
@@ -46,4 +42,4 @@ def makedirs(dirname):
 
 
 if __name__ == '__main__':
-    handle_video('/mnttrace/20180511', '/home')
+    handle_video('/mnttest/test')
