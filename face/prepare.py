@@ -75,4 +75,4 @@ def makedirs(dirname):
 
 
 if __name__ == '__main__':
-    handle_video('/mnttrace/test', '/home/data')
+    handle_video('/mnttrace/20180511', '/home')
