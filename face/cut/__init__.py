@@ -15,20 +15,24 @@ class Cut(object):
         self.process_num = int(conf.get('process_num', 2))
 
     def run(self):
-        pool = multiprocessing.Pool(self.process_num)
+        pool = multiprocessing.Pool(processes=2)
 
         for d in os.listdir(self.ddir):
             if d != 'cluster':
                 ipc_dir = os.path.join(self.ddir, d)
                 obj = self._get_ipc_object(ipc_dir)
-                pool.apply_async(obj.run)
+                pool.apply_async(_wapper, (obj, ))
 
         pool.close()
         pool.join()
 
-    @abc.abstractclass
+    @abc.abstractmethod
     def _get_ipc_object(self, path):
         pass
+
+
+def _wapper(obj):
+    obj.run()
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -48,7 +52,7 @@ class Ipc(object):
         cmd = self._get_cmd()
         self._run_cmd(cmd)
 
-    @abc.abcstractmethod
+    @abc.abstractmethod
     def _get_cmd(self):
         pass
 

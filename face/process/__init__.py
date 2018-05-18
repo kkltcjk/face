@@ -5,7 +5,7 @@ import logging
 
 import yaml
 
-from face.common import constants import consts
+from face.common import constants as consts
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -27,27 +27,27 @@ class Process(object):
         return conf
 
     def run(self):
-        self._prepare()
-        self._cut()
-        self._between_job()
-        self._cluster()
-        self._do_zip()
+        for ddir in self.dirs:
+            self._prepare(ddir)
+            self._cut(ddir)
+            self._between_job(ddir)
+            self._cluster(ddir)
+            self._do_zip(ddir)
 
     @abc.abstractmethod
-    def _prepare(self):
+    def _prepare(self, ddir):
         pass
 
     @abc.abstractmethod
-    def _cut(self):
+    def _cut(self, ddir):
+        pass
+
+    def _between_job(self, ddir):
         pass
 
     @abc.abstractmethod
-    def _between_job(self):
+    def _cluster(self, ddir):
         pass
 
-    @abc.abstractmethod
-    def _cluster(self):
-        pass
-
-    def _do_zip(self):
+    def _do_zip(self, ddir):
         pass

@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import re
 import shutil
@@ -7,34 +8,34 @@ from face.common import utils
 
 
 class TrainPrepareV1(Prepare):
-    def __init__(self, conf, dirs):
+    def __init__(self, conf, ddir):
         self.conf = conf
-        self.dirs = dirs
+        self.ddir = ddir
 
     def run(self):
-        for ddir in self.dirs:
-            full_path = os.path.join(self.dirs, ddir)
-            self._run_each_dir(full_path)
+        self._run_each_dir(self.ddir)
 
     def _run_each_dir(self, ddir):
         self._create_video_dirs(ddir)
+        self._rebuild_dir(ddir)
 
     def _create_video_dirs(self, ddir):
         scenarios = self.conf.get('scenario_map', {})
         for scenario in scenarios:
-            self._create_video_dir(ddir, scenario)
+            full_path = os.path.join(ddir, scenario)
+            self._create_video_dir(full_path)
 
-    def _create_video_dir(self, ddir, scenario):
-        utils.makedirs(os.path.join(ddir, scenario, 'video'))
+    def _create_video_dir(self, ddir):
+        utils.makedirs(os.path.join(ddir, 'video'))
 
     def _rebuild_dir(self, ddir):
         for f in os.listdir(ddir):
             full_path = os.path.join(ddir, f)
-            if os.path.isifle(full_path):
+            if os.path.isfile(full_path):
                 self._handle_file(full_path)
 
     def _handle_file(self, path):
-        if path.startswith('mp4'):
+        if path.endswith('mp4'):
             self._handle_mp4(path)
         else:
             os.remove(path)
@@ -53,9 +54,9 @@ class TrainPrepareV1(Prepare):
         scenarios = self.conf.get('scenario_map', {})
         rmap = self.conf.get('rmap', {})
 
-        if re.search(scenarios['IPC1'], file_name):
+        if re.search(r'(.*)验票口南球机(.*)', file_name):
             scenario = 'IPC1'
-        elif re.search(scenarios['IPC15'], file_name):
+        elif re.search(r'(.*)安检大厅球机(.*)', file_name):
             scenario = 'IPC15'
         else:
             scenario = rmap[file_name.split('_')[1].upper()]

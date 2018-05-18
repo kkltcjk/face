@@ -9,6 +9,6 @@ class TrainCutV1(Cut):
 
 class TrainIpcV1(Ipc):
     def _get_cmd(self):
-        script = './{}'.format(self.conf.get('cmd')
+        script = './{}'.format(self.conf.get('cut_cmd'))
         cmd_list = [script, self.ddir, self.video_dir, self.yitu_dir, self.output_dir]
         return ' '.join(cmd_list)
