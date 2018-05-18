@@ -1,14 +1,11 @@
 import yaml
 import io
 
-from face.prepare.train import TrainPrepareV1
-from face.cut.train import TrainCutV1
+from face.process.train import TrainProcessV1
 
 
 def main(ddir):
-    conf = yaml.safe_load(io.open('/etc/face/face.conf', encoding='utf-8'))['train']
-
-    obj = TrainCutV1(conf, '/mntticket/test')
+    obj = TrainProcessV1(ddir)
     obj.run()
 
 

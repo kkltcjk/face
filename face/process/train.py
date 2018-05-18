@@ -13,8 +13,8 @@ class TrainProcessV1(Process):
         super(TrainProcessV1, self).__init__(dirs)
         self.conf = self.conf['train']
 
-    def _prepare(self):
-        obj = TrainPrepareV1(self.conf, self.dirs)
+    def _prepare(self, ddir):
+        obj = TrainPrepareV1(self.conf, ddir)
         obj.run()
 
     def _cut(self, ddir):
