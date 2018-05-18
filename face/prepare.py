@@ -7,8 +7,23 @@ import shutil
 from datetime import datetime
 
 SCENARIO_MAP = {
-    'IPC1': r'(.*)南(.*)',
-    'IPC15': ''
+    'IPC1': r'(.*)验票口南球机(.*)',
+    'IPC15': r'(.*)安检大厅球机(.*)',
+    'IPC2': 'CH1',
+    'IPC3': 'CH2',
+    'IPC4': 'CH3',
+    'IPC5': 'CH4',
+    'IPC6': 'CH5',
+    'IPC7': 'CH6',
+}
+
+RMAP = {
+    'CH1': 'IPC2',
+    'CH2': 'IPC3',
+    'CH3': 'IPC4',
+    'CH4': 'IPC5',
+    'CH5': 'IPC6',
+    'CH6': 'IPC7'
 }
 
 
@@ -48,12 +63,14 @@ def handler_file(full_path):
 def handle_mp4(full_path):
     base_name = os.path.basename(full_path)
     dir_name = os.path.dirname(full_path)
-    t = datetime.strptime(base_name.split()[1].split('_')[3], '%Y%m%d%H%M%S')
+    t = datetime.strptime(base_name.split('_')[3], '%Y%m%d%H%M%S')
 
     if re.search(SCENARIO_MAP['IPC1'], base_name):
         scenario = 'IPC1'
-    else:
+    elif re.search(SCENARIO_MAP['IPC15'], base_name):
         scenario = 'IPC15'
+    else:
+        scenario = RMAP[base_name.split('_')[1].upper()]
 
     new_name = '{}_{}.mp4'.format(scenario, t.strftime('%Y_%m_%d_%H_%M_%S'))
 
@@ -75,4 +92,4 @@ def makedirs(dirname):
 
 
 if __name__ == '__main__':
-    handle_video('/mnttrace/20180511', '/home')
+    handle_video('/mntresource/resource/test', '/home/data')

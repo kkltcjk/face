@@ -1,19 +1,25 @@
-from multiprocessing import Process
+import os
+import  multiprocessing
 
 import utils
 
 
 def cut(paths):
-    process_list = [Process(target=_cut, args=(path,)) for path in paths]
-    [p.start() for p in process_list]
-    [p.join() for p in process_list]
+    pool = multiprocessing.Pool(processes = 3)
+    for path in paths:
+        pool.apply_async(_cut, (path, ))
+    pool.close()
+    pool.join()
 
 
 def _cut(path):
-    cmd = './run_z00355208_trace {}'.format(path)
-    kwargs = {'cwd': '/root/temp_face/yitu_sdk_sj_crack20180308'}
+    video_dir = os.path.join(path, 'video')
+    yitu_dir = os.path.join(path, 'yitu_orgin')
+    output_dir = os.path.join(os.path.dirname(path), 'cluster', 'output')
+    cmd = './do_cut.sh {} {} {} {}'.format(path, video_dir, yitu_dir, output_dir)
+    kwargs = {'cwd': '/home/kklt/train'}
     utils.execute_command(cmd, **kwargs)
 
 
 if __name__ == '__main__':
-    cut(['/home/data/20180511/IPC1', '/home/data/20180511/IPC15'])
+    cut(['/home/data/test/IPC1', '/home/data/test/IPC15', '/home/data/test/IPC2'])
