@@ -8,64 +8,47 @@ from face.common import utils
 
 
 class TrainPrepareV1(Prepare):
-    def __init__(self, conf, ddir):
-        self.conf = conf
-        self.ddir = ddir
+    def _adapt(self):
+        self._create_ipc_dirs()
 
-    def run(self):
-        self._run_each_dir(self.ddir)
+    def _create_ipc_dirs(self):
+        ipcs = self.conf.get('ipc_map', {})
+        for ipc in ipcs:
+            utils.makedirs(os.path.join(self.ddir, ipc))
 
-    def _run_each_dir(self, ddir):
-        self._create_video_dirs(ddir)
-        self._rebuild_dir(ddir)
-
-    def _create_video_dirs(self, ddir):
-        scenarios = self.conf.get('scenario_map', {})
-        for scenario in scenarios:
-            full_path = os.path.join(ddir, scenario)
-            self._create_video_dir(full_path)
-
-    def _create_video_dir(self, ddir):
-        utils.makedirs(os.path.join(ddir, 'video'))
-
-    def _rebuild_dir(self, ddir):
-        for f in os.listdir(ddir):
-            full_path = os.path.join(ddir, f)
+    def _move_mp4_to_ipc_dir(self):
+        for f in os.listdir(self.ddir):
+            full_path = os.path.abspath(f)
             if os.path.isfile(full_path):
-                self._handle_file(full_path)
+                if full_path.endswith('mp4'):
+                    pass
+                else:
+                    os.remove(full_path)
 
-    def _handle_file(self, path):
-        if path.endswith('mp4'):
-            self._handle_mp4(path)
-        else:
-            os.remove(path)
-
-    def _handle_mp4(self, path):
+    def _move_mp4(self, path):
         file_name = os.path.basename(path)
-        dir_name = os.path.dirname(path)
 
-        scenario = self._get_scenario(file_name)
-        new_name = self._get_new_name(scenario, file_name)
-        new_path = os.path.join(dir_name, scenario, 'video', new_name)
+        ipc = self._get_ipc(file_name)
+        new_name = self._get_new_name(ipc, file_name)
+        new_path = os.path.join(self.ddir, ipc, new_name)
 
         shutil.move(path, new_path)
 
-    def _get_scenario(self, file_name):
-        scenarios = self.conf.get('scenario_map', {})
+    def _get_ipc(self, file_name):
         rmap = self.conf.get('rmap', {})
 
         if re.search(r'(.*)验票口南球机(.*)', file_name):
-            scenario = 'IPC1'
+            ipc = 'IPC1'
         elif re.search(r'(.*)安检大厅球机(.*)', file_name):
-            scenario = 'IPC15'
+            ipc = 'IPC15'
         else:
-            scenario = rmap[file_name.split('_')[1].upper()]
+            ipc = rmap[file_name.split('_')[1].upper()]
 
-        return scenario
+        return ipc
 
-    def _get_new_name(self, scenario, file_name):
+    def _get_new_name(self, ipc, file_name):
         timestamp = utils.str_to_time(file_name.split('_')[3], '%Y%m%d%H%M%S')
 
         time_str = utils.format_timestamp(timestamp, '%Y_%m_%d_%H_%M_%S')
 
-        return '{}_{}.mp4'.format(scenario, time_str)
+        return '{}_{}.mp4'.format(ipc, time_str)

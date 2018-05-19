@@ -48,6 +48,8 @@ class Ipc(object):
         scenario_dir = os.path.dirname(self.ddir)
         self.output_dir = os.path.join(scenario_dir, 'cluster', 'output')
 
+        self.ipc_no = 0
+
     def run(self):
         cmd = self._get_cmd()
         self._run_cmd(cmd)

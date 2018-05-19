@@ -6,4 +6,6 @@ class Cluster(object):
         self.conf = conf
         self.ddir = ddir
 
-        self.image_dir = os.path.join(ddir, 'cluster', 'output')
+        self.cluster_dir = os.path.join(ddir, 'cluster')
+        self.image_dir = os.path.join(self.cluster_dir, 'output')
+        self.log_path = os.path.join(self.cluster_dir, 'result.log')
