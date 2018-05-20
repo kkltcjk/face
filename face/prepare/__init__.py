@@ -1,9 +1,12 @@
+# coding=utf-8
 import os
 import abc
 import six
-import shutil
+import logging
 
 from face.common import utils
+
+LOG = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -13,11 +16,16 @@ class Prepare(object):
         self.ddir = ddir
 
     def run(self):
+        base_name = os.path.basename(self.ddir)
+        LOG.info('%s start prepare job', base_name)
+
         self._adapt()
 
         self._create_video_dirs()
 
         self._move_mp4_to_video_dir()
+
+        LOG.info('%s prepare job finished', base_name)
 
     @abc.abstractmethod
     def _adapt(self):
@@ -25,22 +33,33 @@ class Prepare(object):
 
     def _create_video_dirs(self):
         for ddir in os.listdir(self.ddir):
-            self._create_video_dir(os.path.abspath(ddir))
+            if ddir == 'cluster':
+                continue
+            abs_dir = os.path.abspath(ddir)
+            if os.path.isdir(abs_dir):
+                self._create_video_dir(os.path.abspath(ddir))
 
     def _create_video_dir(self, ddir):
         utils.makedirs(os.path.join(ddir, 'video'))
 
     def _move_mp4_to_video_dir(self):
         for ddir in os.listdir(self.ddir):
-            full_path = os.path.abspath(ddir)
-            for sub_dir in os.listdir(full_path):
-                if os.path.isfile(full_path):
-                    self._move_file(os.path.abspath(sub_dir))
+            if ddir == 'cluster':
+                continue
+
+            abs_dir = os.path.abspath(ddir)
+            if not os.path.isdir(abs_dir):
+                continue
+
+            for f in os.listdir(abs_dir):
+                abs_path = os.path.abspath(f)
+                if os.path.isfile(abs_path):
+                    self._move_file(abs_path)
 
     def _move_file(self, path):
         ddir = os.path.dirname(path)
 
         if path.endswith('mp4'):
-            shutil.move(path, os.path.join(ddir, 'video'))
+            utils.move_file(path, os.path.join(ddir, 'video'))
         else:
             os.remove(path)

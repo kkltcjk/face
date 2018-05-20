@@ -1,7 +1,11 @@
+# coding=utf-8
 import os
+import logging
 
 from face.cluster import Cluster
 from face.common import utils
+
+LOG = logging.getLogger(__name__)
 
 
 class MultiheadClusterV1(Cluster):

@@ -8,7 +8,7 @@ from face.common import utils
 LOG = logging.getLogger(__name__)
 
 
-class TrainProcessV1(Process):
+class MultiheadProcessV1(Process):
 
     def _between_job(self, ddir):
         for d in os.listdir(ddir):

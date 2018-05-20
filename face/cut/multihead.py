@@ -1,7 +1,11 @@
+# coding=utf-8
 import os
+import logging
 
 from face.cut import Cut
 from face.cut import Ipc
+
+LOG = logging.getLogger(__name__)
 
 
 class MultiheadCutV1(Cut):

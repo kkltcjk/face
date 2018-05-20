@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 import zipfile
+import shutil
 from datetime import datetime
 
 from stevedore import extension
@@ -26,6 +27,22 @@ def makedirs(dirname):
         LOG.warning('%s already exists', dirname)
 
 
+def move_file(origin, target):
+    if not os.path.exists(origin):
+        LOG.error('%s is not exists', origin)
+        return
+    if not os.path.isfile(origin):
+        LOG.error('%s is not a file', origin)
+        return
+
+    dir_name = os.path.dirname(target)
+    if not os.path.exists(dir_name):
+        makedirs(dir_name)
+
+    LOG.debug('move file %s to %s', origin, target)
+    shutil.move(origin, target)
+
+
 def str_to_time(string, fformat):
     try:
         return datetime.strptime(string, fformat)
@@ -38,6 +55,7 @@ def format_timestamp(timestamp, fformat):
 
 
 def exec_command(cmd, log_path, **kwargs):
+    LOG.debug('execute command: %s', cmd)
     with open(log_path, 'a+') as f:
         p = subprocess.Popen(cmd,
                              shell=True,
@@ -46,9 +64,11 @@ def exec_command(cmd, log_path, **kwargs):
                              executable='/bin/bash',
                              **kwargs)
     p.communicate()
+    LOG.debug('execute command: %s finished', cmd)
 
 
 def do_zip(output_file, base_dir):
+    LOG.debug('zip dir %s to %s', base_dir, output_file)
     f = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_STORED)
 
     for dirpath, dirnames, filenames in os.walk(base_dir):
@@ -61,3 +81,4 @@ def do_zip(output_file, base_dir):
             f.write(base_dir, os.path.join(sub_dir, filename))
 
     f.close()
+    LOG.debug('zip dir %s finished', base_dir)
