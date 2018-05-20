@@ -8,5 +8,5 @@ LOG = logging.getLogger(__name__)
 
 
 class TrainClusterV1(Cluster):
-    def run(self):
+    def _run(self):
         do_cluster(self.cluster_path)

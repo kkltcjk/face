@@ -13,12 +13,13 @@ LOG = logging.getLogger(__name__)
 
 @six.add_metaclass(abc.ABCMeta)
 class Process(object):
-    def __init__(self, conf, dirs):
-        self.dirs = dirs
+    def __init__(self, process, conf, dirs):
+        self.process = process
 
-        self.process = conf['process']
-        self.classes = conf['classes'][self.process]
-        self.conf = conf[self.process]
+        self.classes = conf['classes'][process]
+        self.conf = conf[process]
+
+        self.dirs = dirs
 
     def run(self):
         for ddir in self.dirs:

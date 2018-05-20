@@ -9,7 +9,7 @@ LOG = logging.getLogger(__name__)
 
 
 class MultiheadClusterV1(Cluster):
-    def run(self):
+    def _run(self):
         kwargs = {'cwd': self.conf.get('api_dir')}
         cmd = self._get_cmd()
 
