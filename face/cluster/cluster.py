@@ -4,6 +4,9 @@ import sys
 import shutil
 import subprocess
 import threadpool
+
+from face.common import utils
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -335,7 +338,7 @@ def get_cluster_result(score_path,result_id_path,cluster_id_search_range_list,cu
             continue
 
         tmp_path = line.split("@")[0]
-	#print tmp_path,cut_pic_name,cluster_id_name
+    #print tmp_path,cut_pic_name,cluster_id_name
         if cut_pic_name in tmp_path:
             cluster_item_abpath = tmp_path.split("#")[0]
         elif cluster_id_name in tmp_path:
@@ -427,7 +430,7 @@ def cp_exec(cpfile_A,cpfile_B,i,all_num):
     print u"进度:",str(i) + "/" + str(all_num)
 
 
-def do_cluster(base_path):
+def do_cluster(base_path, cwd, log_path):
     #######################
     #变量定义区
     #######################
@@ -502,7 +505,9 @@ def do_cluster(base_path):
     #调用依图聚类算法
     print u"正在执行依图聚类程序"
     cmd = " ".join(["./do_cluster.sh",id_score_path,"85"])
-    subprocess.call(cmd, shell=True, cwd=yitu_cluster_path)
+    kwargs = {'cwd': cwd}
+    utils.exec_command(cmd, log_path, **kwargs)
+    # subprocess.call(cmd, shell=True, cwd=cwd)
     print u"成功执行依图聚类程序"
     #分析依图聚类结果
     print u"正在获取最终结果"

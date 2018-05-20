@@ -16,6 +16,8 @@ class Cluster(object):
         self.image_dir = os.path.join(self.cluster_dir, 'output')
         self.log_path = os.path.join(self.cluster_dir, 'result.log')
 
+        self.api_dir = self.conf.get('api_dir')
+
         if not os.path.exists(self.image_dir):
             raise RuntimeError('{} is not exists'.format(self.image_dir))
 
