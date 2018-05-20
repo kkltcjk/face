@@ -5,6 +5,7 @@ import zipfile
 import shutil
 from datetime import datetime
 
+import yaml
 from stevedore import extension
 
 LOG = logging.getLogger(__name__)
@@ -18,6 +19,16 @@ def get_subclass(namespace, cclass, name):
     except StopIteration:
         LOG.error('Cannot find subclass: %s', name)
         raise
+
+
+def parse_ymal(path):
+    if not os.path.exists(path):
+        raise RuntimeError('file does not exist')
+
+    with open(path) as f:
+        conf = yaml.safe_load(f)
+
+    return conf
 
 
 def makedirs(dirname):
