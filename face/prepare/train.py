@@ -21,7 +21,7 @@ class TrainPrepareV1(Prepare):
 
     def _move_mp4_to_ipc_dir(self):
         for f in os.listdir(self.ddir):
-            abs_path = os.path.abspath(f)
+            abs_path = os.path.join(self.ddir, f)
             if os.path.isfile(abs_path):
                 if abs_path.endswith('mp4'):
                     self._move_mp4(abs_path)

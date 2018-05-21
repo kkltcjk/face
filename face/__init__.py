@@ -3,7 +3,9 @@ import logging
 from face.common.utils import makedirs
 from face.common import constants as consts
 
-LOG_FORMATTER = '%(asctime)s [%(levelname)s] %(name)s %(filename)s:%(lineno)d %(message)s'
+LOG_FORMATTER = logging.Formatter(
+    '%(asctime)s [%(levelname)s] %(name)s %(filename)s:%(lineno)d %(message)s'
+    )
 
 LOG_STREAM_HANDLER = logging.StreamHandler()
 LOG_STREAM_HANDLER.setFormatter(LOG_FORMATTER)

@@ -525,7 +525,3 @@ def do_cluster(base_path, cwd, log_path):
 
         sava_file_path = "cluster_id_search_range_file.txt"
         write_2d_list(cluster_id_search_range_list, sava_file_path)
-
-
-if __name__ == '__main__':
-    do_cluster('/home/data/test/cluster')

@@ -9,4 +9,4 @@ LOG = logging.getLogger(__name__)
 
 class TrainClusterV1(Cluster):
     def _run(self):
-        do_cluster(self.cluster_path, self.api_dir, self.log_path)
+        do_cluster(self.cluster_dir, self.api_dir, self.log_path)

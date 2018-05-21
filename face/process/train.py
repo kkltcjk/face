@@ -11,6 +11,4 @@ LOG = logging.getLogger(__name__)
 class TrainProcessV1(Process):
 
     def _between_job(self, ddir):
-        for d in os.listdir(ddir):
-            abs_dir = os.path.abspath(d)
-            utils.makedirs(os.path.join(abs_dir, 'cluster', 'output'))
+        utils.makedirs(os.path.join(ddir, 'cluster', 'output'))

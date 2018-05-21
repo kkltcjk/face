@@ -35,9 +35,9 @@ class Prepare(object):
         for ddir in os.listdir(self.ddir):
             if ddir == 'cluster':
                 continue
-            abs_dir = os.path.abspath(ddir)
+            abs_dir = os.path.join(self.ddir, ddir)
             if os.path.isdir(abs_dir):
-                self._create_video_dir(os.path.abspath(ddir))
+                self._create_video_dir(abs_dir)
 
     def _create_video_dir(self, ddir):
         utils.makedirs(os.path.join(ddir, 'video'))
@@ -47,12 +47,12 @@ class Prepare(object):
             if ddir == 'cluster':
                 continue
 
-            abs_dir = os.path.abspath(ddir)
+            abs_dir = os.path.join(self.ddir, ddir)
             if not os.path.isdir(abs_dir):
                 continue
 
             for f in os.listdir(abs_dir):
-                abs_path = os.path.abspath(f)
+                abs_path = os.path.join(abs_dir, f)
                 if os.path.isfile(abs_path):
                     self._move_file(abs_path)
 

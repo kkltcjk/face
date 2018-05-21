@@ -20,7 +20,7 @@ class MultiheadIpcV1(Ipc):
 
         cmd_list = [
             script, self.ddir, self.video_dir,
-            self.yitu_dir, self.output_dir, self.ipc_no
+            self.yitu_dir, self.output_dir, str(self.ipc_no)
         ]
 
         return ' '.join(cmd_list)

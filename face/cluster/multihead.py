@@ -17,7 +17,7 @@ class MultiheadClusterV1(Cluster):
 
     def _get_cmd(self):
         script = './{}'.format(self.conf.get('cluster_cmd'))
-        second_cluster_dir = os.path.join(self.cluster_dir, 'cluster')
+        second_cluster_dir = os.path.join(self.cluster_dir, 'result')
 
         cmd = [script, self.image_dir, second_cluster_dir]
 

@@ -23,15 +23,19 @@ class Cut(object):
 
         pool = multiprocessing.Pool(processes=self.process_num)
 
+        p_list = []
+
         for d in os.listdir(self.ddir):
             if d == 'cluster':
                 continue
 
-            ipc_dir = os.path.abspath(d)
+            ipc_dir = os.path.join(self.ddir, d)
             if os.path.isdir(ipc_dir):
                 obj = self._get_ipc_object(ipc_dir)
-                pool.apply_async(_wapper, (obj, ))
+                p_list.append(pool.apply_async(_wapper, (obj, )))
 
+        for p in p_list:
+            p.get()
         pool.close()
         pool.join()
 
@@ -56,7 +60,11 @@ class Ipc(object):
         self.yitu_dir = os.path.join(ddir, 'yitu_dir')
         self.log_path = os.path.join(ddir, 'result.log')
 
-        scenario_dir = os.path.dirname(self.ddir)
+        scenario_name = os.path.basename(os.path.dirname(self.ddir))
+        scenario_dir = os.path.join(self.conf['output_dir'], scenario_name)
+        if not os.path.exists(scenario_dir):
+            utils.makedirs(scenario_dir)
+
         self.output_dir = os.path.join(scenario_dir, 'cluster', 'output')
 
         self.ipc_no = 0

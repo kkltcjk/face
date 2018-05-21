@@ -11,7 +11,7 @@ def main(process, ddirs):
 
 
 if __name__ == '__main__':
-    process = 'train'
-    ddirs = ['/mntticket/test']
+    process = 'multihead'
+    ddirs = ['/mntresource/test/s2_20180427']
 
     main(process, ddirs)

@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import six
 import abc
 import logging
@@ -34,25 +35,29 @@ class Process(object):
             except Exception:
                 LOG.exception('%s job failed', ddir)
             else:
-                LOG.indo('%s job finished', ddir)
+                LOG.info('%s job finished', ddir)
 
     def _prepare(self, ddir):
-        obj = self._class(Prepare, self.classes['prepare'])(self.conf, ddir)
+        obj = self._class('prepare', Prepare, self.classes['prepare'])(self.conf, ddir)
         obj.run()
 
     def _cut(self, ddir):
-        obj = self._class(Cut, self.classes['cut'])(self.conf, ddir)
+        obj = self._class('cut', Cut, self.classes['cut'])(self.conf, ddir)
         obj.run()
 
     def _cluster(self, ddir):
-        obj = self._class(Cluster, self.classes['cluster'])(self.conf, ddir)
+        obj = self._class('cluster', Cluster, self.classes['cluster'])(self.conf, ddir)
         obj.run()
 
-    def _class(self, base_class, class_name):
-        return utils.get_subclass(self.process, base_class, class_name)
+    def _class(self, namespace, base_class, class_name):
+        return utils.get_subclass(namespace, base_class, class_name)
 
     def _between_job(self, ddir):
         pass
 
     def _do_zip(self, ddir):
-        pass
+        base_name = os.path.basename(ddir)
+        output_dir = os.path.join(self.conf['output_dir'], base_name)
+        result_dir = os.path.join(output_dir, 'cluster', 'result')
+        zip_path = os.path.join(output_dir, '{}.zip'.format(base_name))
+        utils.do_zip(zip_path, result_dir)
