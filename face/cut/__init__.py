@@ -3,7 +3,8 @@ import os
 import abc
 import six
 import logging
-import multiprocessing
+# from  multiprocessing import Pool
+from face.common.pool import GPUPool
 
 from face.common import utils
 
@@ -21,9 +22,8 @@ class Cut(object):
     def run(self):
         LOG.info('%s start cut job', self.ddir)
 
-        pool = multiprocessing.Pool(processes=self.process_num)
-
-        p_list = []
+        # pool = Pool(processes=self.process_num)
+        pool = GPUPool(self.conf, 'cut')
 
         for d in os.listdir(self.ddir):
             if d == 'cluster':
@@ -32,10 +32,8 @@ class Cut(object):
             ipc_dir = os.path.join(self.ddir, d)
             if os.path.isdir(ipc_dir):
                 obj = self._get_ipc_object(ipc_dir)
-                p_list.append(pool.apply_async(_wapper, (obj, )))
+                pool.apply_async(_wapper, (obj, ))
 
-        for p in p_list:
-            p.get()
         pool.close()
         pool.join()
 
@@ -69,6 +67,8 @@ class Ipc(object):
 
         self.ipc_no = 0
 
+        self.gpu_no = 0
+
         if not os.path.exists(self.video_dir):
             raise RuntimeError('{} is not exists'.format(self.video_dir))
 
@@ -82,6 +82,9 @@ class Ipc(object):
         self._run_cmd(cmd)
 
         LOG.debug('%s sub cut job finished', self.ddir)
+
+    def update_gpu(self, gpu_no):
+        pass
 
     @abc.abstractmethod
     def _get_cmd(self):

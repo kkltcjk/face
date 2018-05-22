@@ -15,7 +15,7 @@ class MultiheadCutV1(Cut):
 
 class MultiheadIpcV1(Ipc):
     def _get_cmd(self):
-        script = './{}'.format(self.conf.get('cut_cmd'))
+        script = './{}'.format(self.conf['cut']['cmd'])
         self.ipc_no = int(os.path.basename(self.ddir).split('_')[1][3:]) * 100
 
         cmd_list = [
