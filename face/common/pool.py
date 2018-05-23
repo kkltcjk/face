@@ -15,12 +15,14 @@ class GPUPool(object):
 
         self.count = 0
 
+        self.task = []
+
     def apply_async(self, target, args):
         with self.lock:
             gpu_no = self.count % self.gpu
             self._update_gpu_no(args, gpu_no)
 
-            self.pools[gpu_no].apply_async(target, args)
+            self.task.append(self.pools[gpu_no].apply_async(target, args))
 
             self.count += 1
 

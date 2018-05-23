@@ -17,7 +17,7 @@ class TrainIpcV1(Ipc):
         script = './{}'.format(self.conf['cut']['cmd'])
         cmd_list = [
             script, self.ddir, self.video_dir,
-            self.yitu_dir, self.output_dir, self.gpu_no
+            self.yitu_dir, self.output_dir, str(self.gpu_no)
         ]
         return ' '.join(cmd_list)
 
