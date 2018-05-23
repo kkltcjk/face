@@ -34,6 +34,9 @@ class Cut(object):
                 obj = self._get_ipc_object(ipc_dir)
                 pool.apply_async(_wapper, (obj, ))
 
+        for p in pool.task:
+            LOG.debug(p.get())
+
         pool.close()
         pool.join()
 

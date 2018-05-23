@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import logging
 
 from face.cut import Cut
@@ -15,9 +16,12 @@ class TrainCutV1(Cut):
 class TrainIpcV1(Ipc):
     def _get_cmd(self):
         script = './{}'.format(self.conf['cut']['cmd'])
+        self.ipc_no = int(os.path.basename(self.ddir)[3:]) * 100
+        width = self.conf['cut']['width']
+        height = self.conf['cut']['height']
         cmd_list = [
-            script, self.ddir, self.video_dir,
-            self.yitu_dir, self.output_dir, str(self.gpu_no)
+            script, self.ddir, self.video_dir, self.yitu_dir, self.output_dir,
+            str(self.ipc_no), str(self.gpu_no), str(width), str(height)
         ]
         return ' '.join(cmd_list)
 
