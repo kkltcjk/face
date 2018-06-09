@@ -12,6 +12,6 @@ def main(process, ddirs):
 
 if __name__ == '__main__':
     process = 'train'
-    ddirs = ['/mntresource/test/train']
+    ddirs = ['/home/share1/20180601']
 
     main(process, ddirs)

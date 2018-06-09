@@ -3,6 +3,7 @@ import os
 import abc
 import six
 import logging
+import shutil
 # from  multiprocessing import Pool
 from face.common.pool import GPUPool
 
@@ -27,6 +28,9 @@ class Cut(object):
 
         for d in os.listdir(self.ddir):
             if d == 'cluster':
+                continue
+            if d in ['IPC22', 'IPC21', 'IPC1', 'IPC10', 'IPC20', 'IPC11', 'IPC16', 'IPC25', 'IPC18', 'IPC26', 'IPC23', 'IPC19', 'IPC34', 'IPC17', 'IPC24', 'IPC2', 'IPC29', 'IPC37', 'IPC35', 'IPC36', 'IPC28', 'IPC27']:
+                LOG.debug('%s Pass', d)
                 continue
 
             ipc_dir = os.path.join(self.ddir, d)
@@ -57,20 +61,36 @@ class Ipc(object):
         self.conf = conf
         self.ddir = ddir
 
-        self.video_dir = os.path.join(ddir, 'video')
-        self.yitu_dir = os.path.join(ddir, 'yitu_dir')
-        self.log_path = os.path.join(ddir, 'result.log')
+        self.ipc_no = 0
 
+        self.gpu_no = 0
+
+        self.config_file = 'config/config_0.json'
+
+    def _setup(self):
+        disk_dir = self.conf['cut']['disk'][self.gpu_no]
+
+        ipc_name = os.path.basename(self.ddir)
         scenario_name = os.path.basename(os.path.dirname(self.ddir))
+        scenario_dir = os.path.join(disk_dir, scenario_name)
+        target_dir = os.path.join(scenario_dir, ipc_name)
+        if not os.path.exists(scenario_dir):
+            utils.makedirs(scenario_dir)
+        LOG.debug('Copy %s to %s', self.ddir, target_dir)
+        if os.path.exists(target_dir):
+            shutil.rmtree(target_dir)
+        shutil.copytree(self.ddir, target_dir)
+        self.ddir = target_dir
+
+        self.video_dir = os.path.join(self.ddir, 'video')
+        self.yitu_dir = os.path.join(self.ddir, 'yitu_dir')
+        self.log_path = os.path.join(self.ddir, 'result.log')
+
         scenario_dir = os.path.join(self.conf['output_dir'], scenario_name)
         if not os.path.exists(scenario_dir):
             utils.makedirs(scenario_dir)
 
         self.output_dir = os.path.join(scenario_dir, 'cluster', 'output')
-
-        self.ipc_no = 0
-
-        self.gpu_no = 0
 
         if not os.path.exists(self.video_dir):
             raise RuntimeError('{} is not exists'.format(self.video_dir))
@@ -79,6 +99,9 @@ class Ipc(object):
             raise RuntimeError('{} is not dir'.format(self.video_dir))
 
     def run(self):
+        LOG.debug('Setup')
+        self._setup()
+
         LOG.debug('%s start sub cut job', self.ddir)
 
         cmd = self._get_cmd()

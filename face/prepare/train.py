@@ -11,13 +11,7 @@ LOG = logging.getLogger(__name__)
 
 class TrainPrepareV1(Prepare):
     def _adapt(self):
-        self._create_ipc_dirs()
         self._move_mp4_to_ipc_dir()
-
-    def _create_ipc_dirs(self):
-        ipcs = self.conf.get('ipc_map', {})
-        for ipc in ipcs:
-            utils.makedirs(os.path.join(self.ddir, ipc))
 
     def _move_mp4_to_ipc_dir(self):
         for f in os.listdir(self.ddir):
@@ -38,19 +32,17 @@ class TrainPrepareV1(Prepare):
         utils.move_file(path, new_path)
 
     def _get_ipc(self, file_name):
-        rmap = self.conf.get('rmap', {})
+        ipc = file_name.split('_')[0]
 
-        if re.search(r'(.*)验票口南球机(.*)', file_name):
-            ipc = 'IPC1'
-        elif re.search(r'(.*)安检大厅球机(.*)', file_name):
-            ipc = 'IPC15'
-        else:
-            ipc = rmap[file_name.split('_')[1].upper()]
+        ipc_dir = os.path.join(self.ddir, ipc)
+        if not os.path.exists(ipc_dir):
+            utils.makedirs(ipc_dir)
 
         return ipc
 
     def _get_new_name(self, ipc, file_name):
-        timestamp = utils.str_to_time(file_name.split('_')[3], '%Y%m%d%H%M%S')
+        timestamp = utils.str_to_time(file_name.split('_')[3], '%Y-%m-%d-%H-%M-%S')
+        print(file_name.split('_')[3])
 
         time_str = utils.format_timestamp(timestamp, '%Y_%m_%d_%H_%M_%S')
 
