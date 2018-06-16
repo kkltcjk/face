@@ -6,6 +6,7 @@ from face.process import Process
 from face.common import utils
 
 LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.DEBUG)
 
 
 class TrainProcessV1(Process):

@@ -51,7 +51,10 @@ def move_file(origin, target):
         makedirs(dir_name)
 
     LOG.debug('move file %s to %s', origin, target)
-    shutil.move(origin, target)
+    try:
+        shutil.move(origin, target)
+    except Exception:
+        LOG.exception('Fail to move %s to %s', origin, target)
 
 
 def str_to_time(string, fformat):
@@ -67,7 +70,7 @@ def format_timestamp(timestamp, fformat):
 
 def exec_command(cmd, log_path, **kwargs):
     LOG.debug('execute command: %s', cmd)
-    with open(log_path, 'a+') as f:
+    with open(log_path, 'w') as f:
         p = subprocess.Popen(cmd,
                              shell=True,
                              stdout=f.fileno(),
@@ -75,21 +78,31 @@ def exec_command(cmd, log_path, **kwargs):
                              executable='/bin/bash',
                              **kwargs)
     p.communicate()
-    LOG.debug('execute command: %s finished', cmd)
+
+    if p.returncode != 0:
+        LOG.error('cmd: %s execute failed', cmd)
+    else:
+        LOG.debug('execute command: %s finished', cmd)
 
 
-def do_zip(output_file, base_dir):
+def do_zip(output_file, base_dir, zip_pass):
     LOG.debug('zip dir %s to %s', base_dir, output_file)
-    f = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_STORED)
 
-    for dirpath, dirnames, filenames in os.walk(base_dir):
+    cmd = 'zip -P {} -r {} *'.format(zip_pass, output_file)
+    log_path = '/var/log/face/zip.log'
+    kwargs = {'cwd': base_dir}
+    exec_command(cmd, log_path, **kwargs)
+    # f = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_STORED)
 
-        first_basename = os.path.basename(dirpath)
-        second_basename = os.path.basename(os.path.dirname(dirpath))
-        sub_dir = os.path.join(second_basename, first_basename)
+    # for dirpath, dirnames, filenames in os.walk(base_dir):
 
-        for filename in filenames:
-            f.write(base_dir, os.path.join(sub_dir, filename))
+    #     first_basename = os.path.basename(dirpath)
+    #     second_basename = os.path.basename(os.path.dirname(dirpath))
+    #     sub_dir = os.path.join(second_basename, first_basename)
 
-    f.close()
+    #     for filename in filenames:
+    #         f.write(base_dir, os.path.join(sub_dir, filename))
+
+    # f.setpassword(zip_pass)
+    # f.close()
     LOG.debug('zip dir %s finished', base_dir)

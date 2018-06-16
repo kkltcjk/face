@@ -6,6 +6,7 @@ from face.cluster import Cluster
 from face.common import utils
 
 LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.DEBUG)
 
 
 class MultiheadClusterV1(Cluster):

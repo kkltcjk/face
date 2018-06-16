@@ -6,6 +6,7 @@ from face.cut import Cut
 from face.cut import Ipc
 
 LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.DEBUG)
 
 
 class MultiheadCutV1(Cut):

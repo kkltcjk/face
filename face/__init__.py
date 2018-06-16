@@ -16,5 +16,6 @@ LOG_FILE_HANDLER = logging.FileHandler(consts.LOG_FILE)
 LOG_FILE_HANDLER.setFormatter(LOG_FORMATTER)
 LOG_FILE_HANDLER.setLevel(logging.DEBUG)
 
+del logging.root.handlers[:]
 logging.root.addHandler(LOG_STREAM_HANDLER)
 logging.root.addHandler(LOG_FILE_HANDLER)
