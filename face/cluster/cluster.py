@@ -530,7 +530,7 @@ def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_p
 def cp_exec(cpfile_A,cpfile_B,i,all_num):
     try:
         shutil.copyfile(cpfile_A,cpfile_B)
-        print u"process:",str(i) + "/" + str(all_num)
+        # print u"process:",str(i) + "/" + str(all_num)
     except:
         pass
 

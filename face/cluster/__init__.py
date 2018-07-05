@@ -23,7 +23,7 @@ class Cluster(object):
         self.log_path = os.path.join(self.cluster_dir, 'result.log')
 
         self.api_dir = self.conf.get('api_dir')
-        self.identity_dir = self.get('identity_dir')
+        self.identity_dir = self.conf.get('identity_dir')
         self.zip_dir = self.conf.get('zip_dir')
         self.zip_pass = self.conf.get('zip_pass')
 
@@ -43,8 +43,13 @@ class Cluster(object):
         else:
             LOG.info('%s cluster job finished', self.ddir)
 
-            self._do_zip()
-            self._remove_cut_dir()
+            try:
+                self._do_zip()
+            except Exception:
+                LOG.exception('Fail to zip: %s', self.ddir)
+            else:
+                LOG.debug('Zip file: %s successfully', self.ddir)
+                self._remove_cut_dir()
 
     @abc.abstractmethod
     def _run(self):
@@ -57,12 +62,7 @@ class Cluster(object):
         zip_path = os.path.join(self.zip_dir, '{}.zip'.format(base_name))
 
         LOG.debug('Start to zip: %s', self.ddir)
-        try:
-            utils.do_zip(zip_path, result_dir, self.zip_pass)
-        except Exception:
-            LOG.exception('Fail to zip: %s', self.ddir)
-        else:
-            LOG.debug('Zip file: %s successfully', self.ddir)
+        utils.do_zip(zip_path, result_dir, self.zip_pass)
 
     def _remove_cut_dir(self):
         try:

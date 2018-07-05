@@ -16,5 +16,5 @@ def main(ttype, ddirs):
 
 if __name__ == '__main__':
     ttype = 'train'
-    ddirs = ['/input4/20180604']
+    ddirs = ['/input3/20180618']
     main(ttype, ddirs)

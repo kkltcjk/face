@@ -45,7 +45,8 @@ class Cut(object):
 
         for ddir in self.ddirs:
             LOG.debug('Sync disk: %s', ddir)
-            subprocess.call('du -h --max-depth=1', shell=True, cwd=ddir)
+            kwargs = {'cwd': ddir}
+            utils.exec_command('du -h --max-depth=1', '/var/log/face/disk.log', **kwargs)
 
 
             ddir = os.path.join(self.ddirs, ddir)
@@ -88,7 +89,10 @@ class Cut(object):
         LOG.info('%s cut job finished', ddir)
 
         self._remove_cut_dir(ddir)
-        self._remove_temp_dir(ddir)
+        try:
+            self._remove_temp_dir(ddir)
+        except Exception:
+            LOG.exception('RM temp file failed')
 
         obj = self.cluster_class(self.conf, ddir)
         self.cluster_pool.apply_async(_wapper, (obj, ))

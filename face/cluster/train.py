@@ -27,6 +27,7 @@ class TrainClusterV1(Cluster):
         if os.path.exists(target_dir):
             shutil.rmtree(target_dir)
 
+        LOG.debug('Copy identity dir')
         shutil.copytree(identity_dir, target_dir)
 
     def _copy_ticket_dir(self):
@@ -38,4 +39,5 @@ class TrainClusterV1(Cluster):
         if os.path.exists(target_dir):
             shutil.rmtree(target_dir)
 
+        LOG.debug('Copy ticket dir')
         shutil.copytree(ticket_dir, target_dir)

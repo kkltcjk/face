@@ -7,6 +7,7 @@ from datetime import datetime
 
 import yaml
 from stevedore import extension
+from retrying import retry
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
@@ -31,11 +32,15 @@ def parse_ymal(path):
     return conf
 
 
+@retry(stop_max_attempt_number=5, wait_fixed=1)
 def makedirs(dirname):
     try:
         os.makedirs(dirname)
     except OSError:
         LOG.warning('%s already exists', dirname)
+    else:
+        if not os.path.exists(dirname):
+            raise Exception('Create dir {} failed'.format(dirname))
 
 
 def move_file(origin, target):
@@ -50,7 +55,7 @@ def move_file(origin, target):
     if not os.path.exists(dir_name):
         makedirs(dir_name)
 
-    LOG.debug('move file %s to %s', origin, target)
+    # LOG.debug('move file %s to %s', origin, target)
     try:
         shutil.move(origin, target)
     except Exception:
@@ -84,6 +89,8 @@ def exec_command(cmd, log_path, **kwargs):
     else:
         LOG.debug('execute command: %s finished', cmd)
 
+    return p.returncode
+
 
 def do_zip(output_file, base_dir, zip_pass):
     LOG.debug('zip dir %s to %s', base_dir, output_file)
@@ -91,18 +98,9 @@ def do_zip(output_file, base_dir, zip_pass):
     cmd = 'zip -P {} -r {} *'.format(zip_pass, output_file)
     log_path = '/var/log/face/zip.log'
     kwargs = {'cwd': base_dir}
-    exec_command(cmd, log_path, **kwargs)
-    # f = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_STORED)
+    returncode = exec_command(cmd, log_path, **kwargs)
 
-    # for dirpath, dirnames, filenames in os.walk(base_dir):
-
-    #     first_basename = os.path.basename(dirpath)
-    #     second_basename = os.path.basename(os.path.dirname(dirpath))
-    #     sub_dir = os.path.join(second_basename, first_basename)
-
-    #     for filename in filenames:
-    #         f.write(base_dir, os.path.join(sub_dir, filename))
-
-    # f.setpassword(zip_pass)
-    # f.close()
-    LOG.debug('zip dir %s finished', base_dir)
+    if returncode != 0:
+        raise RuntimeError('zip {} failed'.format(base_dir))
+    else:
+        LOG.debug('zip dir %s finished', base_dir)

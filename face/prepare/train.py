@@ -31,7 +31,10 @@ class TrainPrepareV1(Prepare):
         ddir = os.path.dirname(path)
 
         ipc = file_name.split('_')[0]
-        new_name = self._get_new_name(ipc, file_name)
+        try:
+            new_name = self._get_new_name(ipc, file_name)
+        except AttributeError:
+            return
 
         ipc_dir = os.path.join(ddir, ipc)
         if not os.path.exists(ipc_dir):
