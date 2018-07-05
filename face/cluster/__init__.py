@@ -16,7 +16,11 @@ class Cluster(object):
         self.conf = conf
 
         self.scenario = os.path.basename(ddir)
-        self.ddir = os.path.join(self.conf['output_dir'], self.scenario)
+
+        output_num = self.conf['output']['total']
+        output_dir = self.conf['output']['path'][int(self.scenario) % output_num]
+
+        self.ddir = os.path.join(output_dir, self.scenario)
 
         self.cluster_dir = os.path.join(self.ddir, 'cluster')
         self.image_dir = os.path.join(self.cluster_dir, 'id_data_cut')
@@ -56,10 +60,8 @@ class Cluster(object):
         pass
 
     def _do_zip(self):
-        base_name = os.path.basename(self.ddir)
-        output_dir = os.path.join(self.conf['output_dir'], base_name)
-        result_dir = os.path.join(output_dir, 'cluster', 'id_data_result')
-        zip_path = os.path.join(self.zip_dir, '{}.zip'.format(base_name))
+        result_dir = os.path.join(self.ddir, 'cluster', 'id_data_result')
+        zip_path = os.path.join(self.zip_dir, '{}.zip'.format(self.scenario))
 
         LOG.debug('Start to zip: %s', self.ddir)
         utils.do_zip(zip_path, result_dir, self.zip_pass)

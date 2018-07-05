@@ -161,7 +161,10 @@ class Ipc(object):
         self.yitu_dir = os.path.join(self.ddir, 'yitu_dir')
         self.log_path = os.path.join(self.ddir, 'result.log')
 
-        scenario_dir = os.path.join(self.conf['output_dir'], scenario_name)
+        output_num = self.conf['output']['total']
+        output_dir = self.conf['output']['path'][int(scenario_name) % output_num]
+
+        scenario_dir = os.path.join(output_dir, scenario_name)
         if not os.path.exists(scenario_dir):
             utils.makedirs(scenario_dir)
 
