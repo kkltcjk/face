@@ -17,12 +17,14 @@ class TrainClusterV1(Cluster):
         self._copy_identity_dir()
         self._copy_ticket_dir()
 
-        if int(self.scenario) % 2 == 0:
+        if int(self.scenario) % 2 != 0:
             cmd = 'python cluster.py {}'.format(self.cluster_dir)
         else:
             cmd = 'python cluster_exit.py {}'.format(self.cluster_dir)
 
-        utils.exec_command(cmd, self.log_path, **{'cwd': self.api_dir})
+        returncode = utils.exec_command(cmd, self.log_path, **{'cwd': self.api_dir})
+        if returncode != 0:
+            raise RuntimeError('Failed to cluster')
         # do_cluster(self.cluster_dir, self.api_dir, self.log_path)
 
     def _copy_identity_dir(self):

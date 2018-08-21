@@ -54,14 +54,13 @@ class Cluster(object):
             LOG.debug('upload identity information')
             self._upload_identity_data()
 
-            # try:
-            #     # self._do_zip()
-            #     self._copy_to_clean_dir()
-            # except Exception:
-            #     LOG.exception('Fail to copy: %s', self.result_dir)
-            # else:
-            #     LOG.debug('Copy file: %s successfully', self.result_dir)
-            #     self._remove_cut_dir()
+            try:
+                self._do_zip()
+            except Exception:
+                LOG.exception('Fail to copy: %s', self.result_dir)
+            else:
+                LOG.debug('Copy file: %s successfully', self.result_dir)
+                # self._remove_cut_dir()
 
     @abc.abstractmethod
     def _run(self):
@@ -161,10 +160,8 @@ class IdentityData(object):
 
     def _send_data(self, data):
         headers = {'Content-Type': 'application/json'}
-        # url = 'http://{}/information/upload'.format(self.conf['photo_server'])
-        url = 'http://{}/information/upload'.format('43.33.26.40:1111')
+        url = 'http://{}/information/upload'.format(self.conf['photo_server'])
         resp = requests.post(url, data=json.dumps(data), headers=headers)
-        print resp.text
 
     def id_num_decoder(self, iid):
         key_first = ["A","B","C","D","E","F","G","H","I","J","K"]
@@ -186,13 +183,11 @@ class IdentityData(object):
 
 
 if __name__ == '__main__':
-    result_dir = '/disk5/cut/20180730/cluster/id_data_result/EUTYYYTGGFDTYPYIYO'
+    result_dir = '/disk2/cut/20180717/cluster/id_data_result'
     import yaml
     with open('/etc/face/face.conf') as f:
         conf = yaml.safe_load(f)['train']
-    data = IdentityData(result_dir, conf)
-    data.run()
-    # for ddir in os.listdir(result_dir):
-    #     abs_path = os.path.join(result_dir, ddir)
-    #     data = IdentityData(abs_path, conf)
-    #     data.run()
+    for ddir in os.listdir(result_dir):
+        abs_path = os.path.join(result_dir, ddir)
+        data = IdentityData(abs_path, conf)
+        data.run()

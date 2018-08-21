@@ -164,17 +164,12 @@ class Ipc(object):
             raise RuntimeError('{} is not dir'.format(self.video_dir))
 
     def run(self):
-
-        subprocess.call('du -h --max-depth=1', shell=True, cwd=self.ddir)
-
         self._setup()
 
         LOG.debug('%s start sub cut job', self.ddir)
 
         cmd = self._get_cmd()
         self._run_cmd(cmd)
-
-        self._remove_temp_dir()
 
         LOG.debug('%s sub cut job finished', self.ddir)
 
@@ -190,7 +185,10 @@ class Ipc(object):
 
     def _run_cmd(self, cmd):
         kwargs = {'cwd': self.conf.get('api_dir')}
-        utils.exec_command(cmd, self.log_path, **kwargs)
+        returncode = utils.exec_command(cmd, self.log_path, **kwargs)
+
+        if returncode == 0:
+            self._remove_temp_dir()
 
     def _remove_temp_dir(self):
         LOG.debug('Remove temp dir: %s', self.ddir)
