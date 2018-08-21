@@ -95,12 +95,17 @@ def exec_command(cmd, log_path, **kwargs):
 def do_zip(output_file, base_dir, zip_pass):
     LOG.debug('zip dir %s to %s', base_dir, output_file)
 
-    cmd = 'zip -P {} -r {} *'.format(zip_pass, output_file)
-    log_path = '/var/log/face/zip.log'
-    kwargs = {'cwd': base_dir}
-    returncode = exec_command(cmd, log_path, **kwargs)
+    ids = os.listdir(base_dir)
+    for i in range(0, len(ids), 1000):
+        last_index = i + 1000 if (i + 1000) < len(ids) else len(ids)
+        id_group = ids[i: last_index]
 
-    if returncode != 0:
-        raise RuntimeError('zip {} failed'.format(base_dir))
-    else:
-        LOG.debug('zip dir %s finished', base_dir)
+        cmd = 'zip -P {} -r {}_{}_{}.zip {}'.format(zip_pass, output_file, i, last_index, ' '.join(id_group))
+        log_path = '/var/log/face/zip.log'
+        kwargs = {'cwd': base_dir}
+        returncode = exec_command(cmd, log_path, **kwargs)
+
+        if returncode != 0:
+            raise RuntimeError('zip {} failed'.format(base_dir))
+        else:
+            LOG.debug('zip dir %s finished', base_dir)

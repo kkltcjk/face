@@ -44,10 +44,6 @@ class Cut(object):
     def run(self):
 
         for ddir in self.ddirs:
-            LOG.debug('Sync disk: %s', ddir)
-            kwargs = {'cwd': ddir}
-            utils.exec_command('du -h --max-depth=1', '/var/log/face/disk.log', **kwargs)
-
 
             ddir = os.path.join(self.ddirs, ddir)
             self._cut_single_day(ddir)
@@ -123,7 +119,6 @@ class Ipc(object):
         self.conf = conf
         self.ddir = ddir
 
-        # self.video_dir = ''
         self.video_dir = os.path.join(self.ddir, 'video')
 
         self.ipc_no = 0
@@ -143,14 +138,6 @@ class Ipc(object):
 
         scenario_dir = os.path.join(disk_dir, scenario_name)
         target_dir = os.path.join(scenario_dir, ipc_name)
-
-        # if not os.path.exists(scenario_dir):
-        #     utils.makedirs(scenario_dir)
-
-        # if os.path.exists(target_dir):
-        #     shutil.rmtree(target_dir)
-        # LOG.debug('Copy %s from %s to %s', ipc_name, self.ddir, target_dir)
-        # shutil.copytree(self.ddir, target_dir)
 
         if os.path.exists(target_dir):
             shutil.rmtree(target_dir)
@@ -177,6 +164,9 @@ class Ipc(object):
             raise RuntimeError('{} is not dir'.format(self.video_dir))
 
     def run(self):
+
+        subprocess.call('du -h --max-depth=1', shell=True, cwd=self.ddir)
+
         self._setup()
 
         LOG.debug('%s start sub cut job', self.ddir)

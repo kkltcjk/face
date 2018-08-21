@@ -4,6 +4,7 @@ import sys
 import shutil
 import subprocess
 import threadpool
+import threading
 
 from face.common import utils
 
@@ -11,6 +12,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 path_char = os.sep
+mutex = threading.Lock()
 
 ###########################
 #函数功能：根据输入文件，读取其下的票务结构化信息
@@ -176,16 +178,21 @@ def get_cluster_id_range(cluster_id_struct_info_list,ticket_struct_info_days_lis
     for cluster_id_struct_info in cluster_id_struct_info_list:
         id_num = cluster_id_struct_info[0]
 
-        find_id_ticket_info = my_find(id_num, 0, ticket_struct_info_days_list)
-        #check_window = find_id_ticket_info[1]
-        id_ticket_year  = find_id_ticket_info[2]
-        id_ticket_month = find_id_ticket_info[3]
-        id_ticket_day   = find_id_ticket_info[4]
-        id_ticket_sec   = find_id_ticket_info[5]
-        #根据条件查找对应id满足条件的cut_id范围
-        cluster_id_search_range = find_id_frame_list(cut_id_struct_info_list, IPC_check, id_ticket_year, \
+        find_id_ticket_infos = my_finds(id_num, 0, ticket_struct_info_days_list)
+        #解决多次检票的情况
+        cluster_id_search_range_total = []
+        for find_id_ticket_info in find_id_ticket_infos:
+            #check_window = find_id_ticket_info[1]
+            id_ticket_year  = find_id_ticket_info[2]
+            id_ticket_month = find_id_ticket_info[3]
+            id_ticket_day   = find_id_ticket_info[4]
+            id_ticket_sec   = find_id_ticket_info[5]
+            #根据条件查找对应id满足条件的cut_id范围
+            cluster_id_search_range = find_id_frame_list(cut_id_struct_info_list, IPC_check, id_ticket_year, \
                                                           id_ticket_month, id_ticket_day, id_ticket_sec)
-        cluster_id_search_range_list.append([id_num] + cluster_id_search_range)
+            cluster_id_search_range_total = cluster_id_search_range_total + cluster_id_search_range
+
+        cluster_id_search_range_list.append([id_num] + cluster_id_search_range_total)
     return cluster_id_search_range_list
 
 ##########################
@@ -196,11 +203,11 @@ def get_cluster_id_range(cluster_id_struct_info_list,ticket_struct_info_days_lis
 def find_id_frame_list(cut_id_struct_info_list,IPC_check,year,month,day,sec):
     cluster_id_list = []
     #人证卡口时间差定义,单位秒：
-    check_ipc_before = 5 * 60
-    check_ipc_after = 5 * 60
+    check_ipc_before = 15 * 60
+    check_ipc_after = 15 * 60
     #其他卡口时间差定义,单位秒：
-    other_ipc_before = 30 * 60
-    other_ipc_after = 120 * 60
+    other_ipc_before = 40 * 60
+    other_ipc_after = 180 * 60
     #全天秒数上限
     one_day_sec = 24 * 3600
 
@@ -443,14 +450,14 @@ def get_cluster_result(score_path,result_id_path,cluster_id_search_range_list,cu
         if cluster_item_tag[0] not in all_tag_list:
             all_tag_list.append(cluster_item_tag[0])
 
-    judeg_id_list(all_tag_list, cluster_item_tag_abpath_list, result_id_path,cut_pic_name,cluster_id_name,IPC_check,mode)
+    judeg_id_list(all_tag_list, cluster_item_tag_abpath_list, result_id_path,cut_pic_name,cluster_id_name,IPC_check,mode,cluster_id_search_range_list)
 
 ###########################
 #函数功能：根据输入信息，完成所有聚类结果文件的拷贝
 #函数输入：all_tag_list, cluster_item_tag_abpath_list, result_id_path
 #函数输出：暂无
 ###########################
-def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_pic_name,cluster_id_name,IPC_check,mode):
+def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_pic_name,cluster_id_name,IPC_check,mode,cluster_id_search_range_list):
     cp_list = []
     fun_var = []
     for tag in all_tag_list:
@@ -469,6 +476,14 @@ def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_p
                     if mode == "multi_pic":
                         id_term = result_item[1].split(path_char)[-2]
                     cluster_id_name_flag = 1
+
+            #添加时间范围限制
+            id_search_range_find = my_find(id_term,0,cluster_id_search_range_list)
+            if id_search_range_find != []:
+                id_search_range = id_search_range_find[1:]
+            if result_item[1] not in id_search_range:
+                continue
+
             if mode == "check_pic":
                 if ipc_num_flag == 0:
                     print result_item[1]
@@ -496,9 +511,13 @@ def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_p
         if flag == 1:
             cnt = 0
             for result_item in result_list:
+                #添加时间限制
+                id_search_range_find = my_find(id_term,0,cluster_id_search_range_list)
+
                 cnt = cnt + 1
                 print cnt,"/",len(result_list)
                 if cluster_id_name in result_item[1]:
+                    print "check-proc"
                     print result_item[1]
                     print os.path.join(result_id_path,id_term,id_term + ".jpg")
                     json_path = result_item[1].split(".")[0] + ".json"
@@ -506,17 +525,31 @@ def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_p
                     if mode == "check_pic":
                         cp_list.append([result_item[1],os.path.join(result_id_path,id_term,id_term + ".jpg")])
                         cp_list.append([json_path,os.path.join(result_id_path,id_term,id_term + ".json")])
-                elif mode == "multi_pic":
-                    for img in os.listdir(result_item[1]):
-                        img_path = os.path.join(result_item[1], img)
-                        cp_list.append([img_path, os.path.join(result_id_path, id_term, img)])
+                #elif mode == "multi_pic":
+                #    for img in os.listdir(result_item[1]):
+                #        img_path = os.path.join(result_item[1], img)
+                #        cp_list.append([img_path, os.path.join(result_id_path, id_term, img)])
                 else:
+                    print "multi-proc"
+                    print result_item[1]
+
+                    if id_search_range_find != []:
+                        id_search_range = id_search_range_find[1:]
+                    if result_item[1] not in id_search_range:
+                        continue
+
                     for img in os.listdir(result_item[1]):
                         img_path = os.path.join(result_item[1], img)
                         #print img_path
                         #print os.path.join(result_id_path, id_term, img)
                         #shutil.copyfile(img_path,os.path.join(result_id_path, id_term, img))
                         cp_list.append([img_path,os.path.join(result_id_path, id_term, img)])
+
+    # for ele in cp_list:
+    #     try:
+    #         shutil.copyfile(ele[0],ele[1])
+    #     except Exception as e:
+    #         print(e)
 
     for i in range(0,len(cp_list)):
         cpfile_A = cp_list[i][0]
@@ -529,8 +562,9 @@ def judeg_id_list(all_tag_list,cluster_item_tag_abpath_list,result_id_path,cut_p
 
 def cp_exec(cpfile_A,cpfile_B,i,all_num):
     try:
-        shutil.copyfile(cpfile_A,cpfile_B)
-        # print u"process:",str(i) + "/" + str(all_num)
+        with mutex:
+            shutil.copyfile(cpfile_A,cpfile_B)
+            # print u"process:",str(i) + "/" + str(all_num)
     except:
         pass
 
@@ -651,6 +685,30 @@ def get_clean_result(id_relation_path,id_score_clean_path,id_clean_result):
     [pool.putRequest(req) for req in requests]
     pool.wait()
 
+###########################
+#函数功能：在产出结果中标记处最佳的监控照
+#函数输入：id_relation_path,cluster_id_path,result_id_path
+#函数输出：无
+###########################
+def creat_id_check_file(id_relation_path,cluster_id_path,result_id_path):
+    id_relation_handle = open(id_relation_path,"r")
+    lines = id_relation_handle.readlines()
+    for line in lines:
+        line = line.strip("\n")
+        id_name = line.split("#")[0].split("/")[-1]
+        pic_name = line.split("#")[-1]
+        new_pic_name = id_name + "_ipc.jpg"
+
+        org_ipc_pic_path = os.path.join(result_id_path,id_name,pic_name)
+
+        new_ipc_pic_path = os.path.join(result_id_path,id_name,new_pic_name)
+
+        try:
+            shutil.copyfile(org_ipc_pic_path,new_ipc_pic_path)
+        except:
+            print "Error:can't find org_ipc_pic_path!!!"
+
+
 def do_cluster(base_path, cwd, log_path):
     #定义windows/linux
     # path_char = "/"
@@ -658,7 +716,7 @@ def do_cluster(base_path, cwd, log_path):
     #变量定义区
     #######################
     #定义debug开关
-    debug = True
+    debug = False
     #定义人证合一卡口对应IPC命名范围
     IPC_check = ["IPC1","IPC2","IPC3","IPC4","IPC5","IPC6","IPC7","IPC8","IPC9","IPC10","IPC11","IPC12"]
     #定义基本文件目录
@@ -775,6 +833,12 @@ def do_cluster(base_path, cwd, log_path):
     print "analyzing multi-id result file..."
     get_cluster_result(score_path,result_id_path,cluster_id_search_range_list,cut_pic_name,cluster_id_name,IPC_check,"multi_pic")
     print "success"
+
+    #生成用于标注的监控照
+    print "creat check-id result file..."
+    creat_id_check_file(id_relation_path,cluster_id_path,result_id_path)
+    print "success"
+
     '''
     #类内清洗环节
     #获取类内清洗聚类打分文件
@@ -789,9 +853,9 @@ def do_cluster(base_path, cwd, log_path):
     #分析聚类结果文件
     print "analyzing clean-id result file..."
     get_clean_result(id_relation_path,id_score_clean_path,id_clean_result)
-    print "success"   
+    print "success"
     '''
-    if debug == False:
+    if debug == True:
         sava_file_path = "ticket_id_file.txt"
         write_2d_list(ticket_struct_info_days_list, sava_file_path)
 

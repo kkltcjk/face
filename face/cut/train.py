@@ -20,11 +20,11 @@ class TrainIpcV1(Ipc):
         width = self.conf['cut']['width']
         height = self.conf['cut']['height']
 
-        self.config_file = 'config/config_{}.json'.format(self.gpu_no)
+        self.config_file = 'config/config_{}.json'.format(self.gpu_no + 1)
 
         cmd_list = [
             script, self.ddir, self.video_dir, self.yitu_dir, self.output_dir,
-            str(self.gpu_no), self.config_file, str(width), str(height)
+            str(self.gpu_no + 1), self.config_file, str(width), str(height)
         ]
 
         return ' '.join(cmd_list)

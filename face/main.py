@@ -12,6 +12,6 @@ def main(process, ddirs):
 
 if __name__ == '__main__':
     process = 'train'
-    ddirs = ['/43.33.26.79/g/20180619']
+    ddirs = ['/43.33.26.79/d/20180721']
 
     main(process, ddirs)
